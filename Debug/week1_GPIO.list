@@ -427,15 +427,19 @@ int main(void)
  8000526:	2b00      	cmp	r3, #0
  8000528:	d109      	bne.n	800053e <main+0x66>
 			{
-				if (Half_Period == 500) {
+				if (Half_Period == 500)
  800052a:	89fb      	ldrh	r3, [r7, #14]
  800052c:	f5b3 7ffa 	cmp.w	r3, #500	; 0x1f4
  8000530:	d102      	bne.n	8000538 <main+0x60>
+				{
 					Half_Period = 250;
  8000532:	23fa      	movs	r3, #250	; 0xfa
  8000534:	81fb      	strh	r3, [r7, #14]
  8000536:	e002      	b.n	800053e <main+0x66>
-				} else {
+				}
+
+				else
+				{
 					Half_Period = 500;
  8000538:	f44f 73fa 	mov.w	r3, #500	; 0x1f4
  800053c:	81fb      	strh	r3, [r7, #14]
@@ -473,6 +477,7 @@ int main(void)
  8000570:	f000 fcec 	bl	8000f4c <HAL_GPIO_WritePin>
  8000574:	e7c2      	b.n	80004fc <main+0x24>
 				}
+
 				else
 				{
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, 0);

@@ -105,9 +105,13 @@ int main(void)
 			SwitchState[0] = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_10);
 			if (SwitchState[1] == 1 && SwitchState[0] == 0)
 			{
-				if (Half_Period == 500) {
+				if (Half_Period == 500)
+				{
 					Half_Period = 250;
-				} else {
+				}
+
+				else
+				{
 					Half_Period = 500;
 				}
 			}
@@ -121,6 +125,7 @@ int main(void)
 				{
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, 1);
 				}
+
 				else
 				{
 					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, 0);
