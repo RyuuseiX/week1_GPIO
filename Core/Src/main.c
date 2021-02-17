@@ -90,9 +90,17 @@ int main(void)
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
 	GPIO_PinState S1_State[2];
-	uint16_t Half_Period = 500;
-	uint32_t Ticker = 0;
-	uint32_t DelayTime = 0;
+	GPIO_PinState S2_State[2];
+	GPIO_PinState S3_State[2];
+	uint16_t S1_Half_Period = 1000;
+	uint32_t S1_Time_Stamp = 0;
+	uint32_t Debounce_Time_Stamp = 0;
+	GPIO_PinState S2_D3_State = 0;
+	GPIO_PinState S3_0 = 0;
+	GPIO_PinState S3_1 = 1;
+	GPIO_PinState S3_2;
+	uint32_t S3_Time_Stamp = 0;
+
 	//S1=PA10, S2=PB3, S3=PB5
 	//D1=PA9,  D3=PC7, D5=PB6
   /* USER CODE END 2 */
@@ -101,42 +109,94 @@ int main(void)
   /* USER CODE BEGIN WHILE */
 	while (1)
 	{
-		HAL_GPIO_WritePin(GPIOC, GPIO_Pin_7, 1);
-		if(HAL_GetTick() - DelayTime >= 100)
+		if (HAL_GetTick() - Debounce_Time_Stamp >= 100) //Debouncing switch
 		{
-			DelayTime = HAL_GetTick();
+			Debounce_Time_Stamp = HAL_GetTick();
+
+			//1st
 			S1_State[0] = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_10);
-			if (S1_State[1] == 1 && S1_State[0] == 0)
+			if (S1_State[1] == 0 && S1_State[0] == 1)
 			{
-				if (Half_Period == 500)
+				if (S1_Half_Period == 1000) //0.5->1
 				{
-					Half_Period = 250;
+					S1_Half_Period = 500;
+				}
+
+				else if (S1_Half_Period == 500) //1->2
+				{
+					S1_Half_Period = 250;
+				}
+
+				else if (S1_Half_Period == 250) //2->3
+				{
+					S1_Half_Period = 167; // 500/3 = 166.6667
 				}
 
 				else
 				{
-					Half_Period = 500;
+					S1_Half_Period = 1000;
 				}
+			}
+
+			//2nd
+			S2_State[0] = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_3);
+			if (S2_State[1] == 0 && S2_State[0] == 1)
+			{
+				if (S2_D3_State == 0)
+				{
+					S2_D3_State = 1;
+				}
+
+				else if (S2_D3_State == 1)
+				{
+					S2_D3_State = 0;
+				}
+			}
+
+			//3rd
+			S3_State[0] = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_5);
+			if (S3_State[1] == 0 && S3_State[0] == 1)
+			{
+				S3_2 = S3_1;
+				S3_1 = S3_0;
+				S3_0 = S3_2;
+				S3_Time_Stamp = HAL_GetTick();
 			}
 
 			S1_State[1] = S1_State[0];
+			S2_State[1] = S2_State[0];
+			S3_State[1] = S3_State[0];
+		}
 
-			if (HAL_GetTick() - Ticker >= Half_Period)
+		//1st
+		if (HAL_GetTick() - S1_Time_Stamp >= S1_Half_Period)
+		{
+			S1_Time_Stamp = HAL_GetTick();
+			if(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_9) == 0)
 			{
-				Ticker = HAL_GetTick();
-				if(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_9) == 0)
-				{
-					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, 1);
-				}
+				HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, 1);
+			}
 
-				else
-				{
-					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, 0);
-				}
-
+			else
+			{
+				HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, 0);
 			}
 		}
 
+		//2nd
+		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, S2_D3_State);
+
+		//3rd
+		if ((HAL_GetTick() - S3_Time_Stamp >= 2000) || (HAL_GetTick() - S3_Time_Stamp <= 500))
+		{
+			HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, S3_0);
+			S3_Time_Stamp = HAL_GetTick();
+		}
+
+		else if (HAL_GetTick() - S3_Time_Stamp >= 500)
+		{
+			HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, S3_1);
+		}
 
 
     /* USER CODE END WHILE */
