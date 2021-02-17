@@ -187,15 +187,18 @@ int main(void)
 		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, S2_D3_State);
 
 		//3rd
-		if ((HAL_GetTick() - S3_Time_Stamp >= 2000) || (HAL_GetTick() - S3_Time_Stamp <= 500))
+		if (HAL_GetTick() - S3_Time_Stamp <= 1500)
 		{
 			HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, S3_0);
-			S3_Time_Stamp = HAL_GetTick();
 		}
 
-		else if (HAL_GetTick() - S3_Time_Stamp >= 500)
+		else if ((HAL_GetTick() - S3_Time_Stamp < 2000) && (HAL_GetTick() - S3_Time_Stamp > 1500))
 		{
 			HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, S3_1);
+		}
+		else
+		{
+			S3_Time_Stamp = HAL_GetTick();
 		}
 
 
